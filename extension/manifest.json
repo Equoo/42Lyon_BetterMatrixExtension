@@ -1,0 +1,20 @@
+{
+  "name": "BetterMatrix",
+  "description": "BetterMatrix",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": ["declarativeNetRequest"],
+  "host_permissions": ["https://meta.intra.42.fr/clusters*", "http://localhost:15000/*"],
+  "content_scripts": [
+	{
+      "js": ["src/claim.js"],
+      "matches": [
+        "https://matrix.42lyon.fr/clusters/*/claimed"
+      ]
+    }
+  ]
+}
