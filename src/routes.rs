@@ -48,6 +48,24 @@ async fn time_per_host_handler(
     Ok(Json(computed))
 }
 
+async fn all_handler(
+    Path(user): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<(Vec<HostTime>, Vec<LongestSession>)>, String> {
+    info!("GET /users/{user}/all");
+
+    let token = state.get_token().await.map_err(|e| e.to_string())?;
+
+    let locations = get_all_locations(&state, &token, &user)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let perhost = compute_time_per_host(&locations);
+    let longest = get_longest_session_per_host(&locations);
+
+    Ok(Json((perhost, longest)))
+}
+
 pub async fn run_server(state: Arc<AppState>) {
     let cors = CorsLayer::new()
         .allow_origin(Any) // allow all origins (dev only!)
@@ -57,6 +75,7 @@ pub async fn run_server(state: Arc<AppState>) {
     let app = Router::new()
         .route("/users/{id}/total", get(time_per_host_handler))
         .route("/users/{id}/longest", get(longest_session_handler))
+        .route("/users/{id}/all", get(all_handler))
         .layer(cors)
         .with_state(state);
 
